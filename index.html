@@ -3,196 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe - Neon Theme</title>
+    <title>Tic-tac-toe</title>
     <style>
-
-
-        body {
-            height: 100vh;
+    
+        body{
+            margin: 0;
+            padding: 0;
+            background-color: #8ed489;
+        }
+        .cell{
+            width: 150px;
+            height: 150px;
+            border: 1px solid black;
+            margin: 5px;
+            border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ffd699;
-            animation: bgAnimation 10s infinite alternate;
         }
-
-
-        .container {
-            background: #47d1d1;
-            color: #fff;
+        .cell:hover{
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 10px 0 #000;
+        }
+        .app-name{
+            text-align: center;
+            color: white;
+        }
+        .board{
+            border: 10px rgb(76, 148, 167);
+            display: flex;
+            flex-wrap: wrap;
+            margin: 50px auto;
+            width: 500px;
+            justify-content: center;
+            align-items: center;
             padding: 40px;
-            border-radius: 20px;
-            box-shadow: #1f7a7a;
+            border-radius: 40px;
+            background-color: white;
+        }
+        
+        .cell-p1 {
+            background-color:rgb(220, 120, 120);
+        }
+        .cell-p2 {
+            background-color:rgb(123, 215, 123);
+        }
+        .player-turn{
             text-align: center;
         }
-
-        h1 {
-            font-size: 36px;
-            color: #ececec;
-            margin-bottom: 20px;
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 15px;
-        }
-
-        .cell {
-            width: 100px;
-            height: 100px;
-            background: orange;
-            border: 2px solid white;
-            border-radius: 10px;
-            font-size: 36px;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 15px rgba(160, 164, 105, 0.5);
-        }
-
-        .cell:hover {
-            background: #888181;
-            box-shadow: 0 0 25px rgba(202, 156, 138, 0.8);
-        }
-
-        .cell.x {
-            color: #ff5733; 
-        }
-
-        .cell.o {
-            color: #33ff57; 
-        }
-
-        .winning-line {
-            animation: blink 0.5s infinite alternate;
-        }
-
-
-
-        .message {
-            font-size: 30px;
-            margin: 20px 0;
-            color: #000000;
-            background-color: #ececec;
-            border-radius: 10px;
-        }
-
-        button {
-            padding: 10px 25px;
-            font-size: 18px;
-            color: #fff;
-            background: #2575fc;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: #1a53a2;
-        }
-
     </style>
 </head>
 <body>
+    <h1 class="app-name">Tic Tac Toe</h1>
+    <p class="player-turn" id="player-element">Player Turn</p>
+    <div class="board" id="board">
+        <div class="cell cell-p1"></div>
+        <div class="cell cell-p2"></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+        <div class="cell "></div>
+    </div>
 
-<div class="container">
-    <h1>Tic Tac Toe </h1>
-
-    <div class="board" id="board"></div>
-
-    <div class="message" id="message">Your Turn!</div>
-
-    <button onclick="resetGame()">Restart Game</button>
-</div>
-
-<script>
-    const board = document.getElementById("board");
-    const message = document.getElementById("message");
-
-    let currentPlayer = "X";
-    let cells = Array(9).fill(null);
-    let gameActive = true;
-
-
-    function createBoard() {
-        board.innerHTML = "";
-        cells = Array(9).fill(null);
-        gameActive = true;
-        message.textContent = "Your Turn!";
-
-        cells.forEach((_, index) => {
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-            cell.dataset.index = index;
-            cell.addEventListener("click", handleCellClick);
-            board.appendChild(cell);
-        });
-    }
-
-
-    function handleCellClick(e) {
-        const index = e.target.dataset.index;
-
-        if (!cells[index] && gameActive) {
-            cells[index] = currentPlayer;
-            e.target.textContent = currentPlayer;
-            e.target.classList.add(currentPlayer === "X" ? "x" : "o");
-
-            if (checkWinner()) {
-                message.textContent =` ${currentPlayer} Wins! 🎉;`
-                highlightWinningCells();
-                gameActive = false;
-            } else if (cells.every(cell => cell !== null)) {
-                message.textContent = "It's a Draw! 🤝";
-                gameActive = false;
+    <script>
+        const board = Array(9).fill(-1);
+        let turn = 1;
+        let gameOver = false;
+    
+        const cellClass = {
+            1: "cell-p1",
+            2: "cell-p2",
+        };
+    
+        const playerImage = {
+            1: "delete.png",
+            2: "correct.png",        
+        };
+    
+        function renderBoard(){
+            const boardElement = document.getElementById("board");
+            boardElement.innerHTML = "";
+    
+            const playerElement = document.getElementById("player-element");
+            playerElement.innerText = `Player ${turn}'s Turn`;
+    
+            board.forEach((cellValue , index)=>{
+                const cellPlayerImage = playerImage[cellValue];
+                const cellImage = cellPlayerImage ? `<img src="${cellPlayerImage}" width="100" height="100" />` : "";
+                const cellClassName = cellValue !== -1 ? cellClass[cellValue] : "";
+                boardElement.innerHTML += `<div class="cell ${cellClassName}" onclick="handleTurn(${index})">${cellImage}</div>`;
+            });
+    
+            checkWinner();
+        }
+    
+        function handleTurn(cellIndex){
+            if (gameOver) return;
+    
+            if (board[cellIndex] === -1){
+                board[cellIndex] = turn;
+                turn = turn === 1 ? 2 : 1;
+                renderBoard();
             } else {
-                currentPlayer = currentPlayer === "X" ? "O" : "X";
-                message.textContent =`  ${currentPlayer}'s Turn`
+                alert("Invalid move");
             }
         }
-    }
-
-
-    function checkWinner() {
-        const winningCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],  
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],  
-            [0, 4, 8], [2, 4, 6]              
-        ];
-
-        for (const combo of winningCombinations) {
-            const [a, b, c] = combo;
-
-            if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
-                highlightCells(combo);
-                return true;
+    
+        function declareWinner(player) {
+            alert(`Player ${player} Wins`);
+            gameOver = true;
+        }
+    
+        function checkWinner(){
+            const WINNING_COMBINATIONS = [
+                [0,1,2],[3,4,5],[6,7,8],
+                [0,3,6],[1,4,7],[2,5,8],
+                [0,4,8],[2,4,6]
+            ];
+    
+            for (const [a, b, c] of WINNING_COMBINATIONS) {
+                if (checkPlayerForPosition(1, a, b, c)) return declareWinner(1);
+                if (checkPlayerForPosition(2, a, b, c)) return declareWinner(2);
             }
         }
-        return false;
-    }
-
-
-    function highlightCells(combo) {
-        combo.forEach(index => {
-            const cell = document.querySelector(cell[data-index ,"${index}"]);
-            cell.classList.add("winning-line");
-        });
-    }
-
-
-    function resetGame() {
-        currentPlayer = "X";
-        createBoard();
-    }
-
-
-    createBoard();
-</script>
-
-</body>
+    
+        function checkPlayerForPosition(player, p1, p2, p3){
+            return board[p1] === player && board[p2] === player && board[p3] === player;
+        }
+    
+        renderBoard();
+    </script>
+    </body>
 </html>
